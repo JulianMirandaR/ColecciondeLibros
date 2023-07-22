@@ -111,5 +111,5 @@ document.querySelector('#libro-form').addEventListener('submit',(e) => {
 document.querySelector('#libro-list').addEventListener('click', (e) => {
     UI.eliminarLibro(e.target);
     Datos.removerLibro(e.target.parentElement.previousElementSibling.textContent);
-    UI.mostrarAlerta('Libro Eliminado', 'success')
+    UI.mostrarAlerta('Libro Eliminado', 'success');
 })
