@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="container mt-4">
-        <h1 class="display-4 text-center">Coleccion de <span class="text-primary">libros</span> </h1>
+        <h1 class="display-4 text-center"> Catalogo de <span class="text-primary">libros</span> </h1>
         <form id="libro-form">
             <div class="form-group"> 
                 <label for="titulo">Titulo</label>
@@ -22,7 +22,11 @@
                 <label for="isbn">#ISBN</label>
                 <input type="text" id="isbn" class="form-control">
             </div>
-            <input type="submit" value="Agregar libro" class="btn btn-primary btn-block"></inputt>
+            <div class="form-group"> 
+                <label for="stock">Stock</label>
+                <input type="text" id="stock" class="form-control">
+            </div>
+            <input type="submit" value="Agregar libro" class="btn btn- btn-block"></inputt>
         </form>
         <table class="table table-striped mt-5">
             <thead>
@@ -30,6 +34,7 @@
                     <th>Titulo</th>
                     <th>Autor</th>
                     <th>ISBN#</th>
+                    <th>Stock</th>
                 </tr>
             </thead>
             <tbody id="libro-list"></tbody>
