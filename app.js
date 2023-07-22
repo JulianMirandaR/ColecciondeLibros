@@ -22,7 +22,7 @@ class UI{
         <td>${libro.autor}</td>
         <td>${libro.isbn}</td>
         <td>${libro.stock}</td>
-        <td><a href = "#" class="btn btn-danger btn-sm delete">X</a></td>
+        <td><a href="#" class="btn btn-danger btn-sm delete" data-isbn="${libro.isbn}">X</a></td>
         `;
         lista.appendChild(fila);
     }
