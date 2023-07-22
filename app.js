@@ -1,9 +1,10 @@
 //Definicion de clases 
 class Libro{
-    constructor (titulo, autor, isbn){
+    constructor (titulo, autor, isbn,stock){
         this.titulo = titulo;
         this.autor = autor;
         this.isbn = isbn;
+        this.stock = stock;
     }
 }
 
@@ -20,6 +21,7 @@ class UI{
         <td>${libro.titulo}</td>
         <td>${libro.autor}</td>
         <td>${libro.isbn}</td>
+        <td>${libro.stock}</td>
         <td><a href = "#" class="btn btn-danger btn-sm delete">X</a></td>
         `;
         lista.appendChild(fila);
@@ -47,6 +49,7 @@ class UI{
         document.querySelector('#titulo').value = '';
         document.querySelector('#autor').value = '';
         document.querySelector('#isbn').value = '';
+        document.querySelector('#stock').value = '';
     }
 
 }
@@ -92,8 +95,9 @@ document.querySelector('#libro-form').addEventListener('submit',(e) => {
     const titulo = document.querySelector('#titulo').value;
     const autor = document.querySelector('#autor').value;
     const isbn = document.querySelector('#isbn').value;
+    const stock = document.querySelector('#isbn').value;
 
-    if(titulo  === '' || autor === ''|| isbn === ''){
+    if(titulo  === '' || autor === ''|| isbn === '' || stock === ''){
         UI.mostrarAlerta('Por favor ingrese todos los datos','danger')
     }else{
         const libro = new Libro(titulo,autor,isbn);
@@ -109,4 +113,3 @@ document.querySelector('#libro-list').addEventListener('click', (e) => {
     Datos.removerLibro(e.target.parentElement.previousElementSibling.textContent);
     UI.mostrarAlerta('Libro Eliminado', 'success')
 })
-
