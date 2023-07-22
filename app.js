@@ -1,6 +1,6 @@
 //Definicion de clases 
 class Libro{
-    constructor (titulo, autor, isbn,stock){
+    constructor (titulo, autor, isbn, stock){
         this.titulo = titulo;
         this.autor = autor;
         this.isbn = isbn;
