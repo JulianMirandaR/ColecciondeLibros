@@ -95,7 +95,7 @@ document.querySelector('#libro-form').addEventListener('submit',(e) => {
     const titulo = document.querySelector('#titulo').value;
     const autor = document.querySelector('#autor').value;
     const isbn = document.querySelector('#isbn').value;
-    const stock = document.querySelector('#isbn').value;
+    const stock = document.querySelector('#stock').value;
 
     if(titulo  === '' || autor === ''|| isbn === '' || stock === ''){
         UI.mostrarAlerta('Por favor ingrese todos los datos','danger')
