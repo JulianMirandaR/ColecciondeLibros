@@ -100,7 +100,7 @@ document.querySelector('#libro-form').addEventListener('submit',(e) => {
     if(titulo  === '' || autor === ''|| isbn === '' || stock === ''){
         UI.mostrarAlerta('Por favor ingrese todos los datos','danger')
     }else{
-        const libro = new Libro(titulo,autor,isbn);
+        const libro = new Libro(titulo,autor,isbn,stock);
         Datos.agregarLibro(libro);
         UI.agregarLibroALista(libro);
         UI.mostrarAlerta('Libro agregado a la coleccion','success');
