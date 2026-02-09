@@ -1,6 +1,5 @@
-//Definicion de clases 
-class Libro{
-    constructor (titulo, autor, isbn, stock){
+class Libro {
+    constructor(titulo, autor, isbn, stock) {
         this.titulo = titulo;
         this.autor = autor;
         this.isbn = isbn;
@@ -8,13 +7,13 @@ class Libro{
     }
 }
 
-class UI{
-    static mostrarLibros(){
+class UI {
+    static mostrarLibros() {
         const libros = Datos.traerLibros();
         libros.forEach((libro) => UI.agregarLibroALista(libro));
     }
 
-    static agregarLibroALista(libro){
+    static agregarLibroALista(libro) {
         const lista = document.querySelector('#libro-list');
         const fila = document.createElement('tr');
         fila.innerHTML = `
@@ -22,44 +21,56 @@ class UI{
         <td>${libro.autor}</td>
         <td>${libro.isbn}</td>
         <td>${libro.stock}</td>
-        <td><a href="#" class="btn btn-danger btn-sm delete" data-isbn="${libro.isbn}">X</a></td>
+        <td><a href="#" class="btn btn-delete btn-sm delete" data-isbn="${libro.isbn}">X</a></td>
         `;
         lista.appendChild(fila);
     }
 
-    static eliminarLibro(el){
-        if(el.classList.contains('delete')){
+    static eliminarLibro(el) {
+        if (el.classList.contains('delete')) {
             el.parentElement.parentElement.remove();
         }
     }
 
-    static mostrarAlerta(mensaje, className){
-        const div= document.createElement('div');
-        div.className= `alert alert-${className}`;
+    static mostrarAlerta(mensaje, className) {
+        const div = document.createElement('div');
+        div.className = `alert alert-${className}`;
         div.appendChild(document.createTextNode(mensaje));
 
-        const container = document.querySelector('.container');
+        const container = document.querySelector('.main-container');
         const form = document.querySelector('#libro-form');
         container.insertBefore(div, form);
 
-        setTimeout(()=>document.querySelector('.alert').remove(), 3000);
+        setTimeout(() => document.querySelector('.alert').remove(), 3000);
     }
 
-    static limpiarCampos(){
+    static limpiarCampos() {
         document.querySelector('#titulo').value = '';
         document.querySelector('#autor').value = '';
         document.querySelector('#isbn').value = '';
         document.querySelector('#stock').value = '';
     }
 
+    static filtrarLibros(texto) {
+        const lista = document.querySelector('#libro-list');
+        lista.innerHTML = '';
+        const libros = Datos.traerLibros();
+
+        const librosFiltrados = libros.filter(libro =>
+            libro.titulo.toLowerCase().includes(texto.toLowerCase()) ||
+            libro.autor.toLowerCase().includes(texto.toLowerCase())
+        );
+
+        librosFiltrados.forEach(libro => UI.agregarLibroALista(libro));
+    }
 }
 
-class Datos{
-    static traerLibros(){
+class Datos {
+    static traerLibros() {
         let libros;
-        if(localStorage.getItem('libros') === null){
+        if (localStorage.getItem('libros') === null) {
             libros = [];
-        }else{
+        } else {
             libros = JSON.parse(localStorage.getItem('libros'));
         }
         return libros;
@@ -71,39 +82,34 @@ class Datos{
         localStorage.setItem('libros', JSON.stringify(libros));
     }
 
-    static removerLibro(isbn){
+    static removerLibro(isbn) {
         const libros = Datos.traerLibros();
         libros.forEach((libro, index) => {
-            if (libro.isbn === isbn){
-                libros.splice(index,1);//eliminar
+            if (libro.isbn === isbn) {
+                libros.splice(index, 1);
             }
         });
-        localStorage.setItem('libros',JSON.stringify(libros));
+        localStorage.setItem('libros', JSON.stringify(libros));
     }
-
 }
 
-//Carga de la pagina 
-document.addEventListener('DOMContentLoaded',UI.mostrarLibros());
+document.addEventListener('DOMContentLoaded', UI.mostrarLibros);
 
-
-//Controlar el evento submit
-document.querySelector('#libro-form').addEventListener('submit',(e) => {
+document.querySelector('#libro-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
-    //Obtener valores de los campos
     const titulo = document.querySelector('#titulo').value;
     const autor = document.querySelector('#autor').value;
     const isbn = document.querySelector('#isbn').value;
     const stock = document.querySelector('#stock').value;
 
-    if(titulo  === '' || autor === ''|| isbn === '' || stock === ''){
-        UI.mostrarAlerta('Por favor ingrese todos los datos','danger')
-    }else{
-        const libro = new Libro(titulo,autor,isbn,stock);
+    if (titulo === '' || autor === '' || isbn === '' || stock === '') {
+        UI.mostrarAlerta('Por favor ingrese todos los datos', 'danger');
+    } else {
+        const libro = new Libro(titulo, autor, isbn, stock);
         Datos.agregarLibro(libro);
         UI.agregarLibroALista(libro);
-        UI.mostrarAlerta('Libro agregado a la coleccion','success');
+        UI.mostrarAlerta('Libro agregado a la colección', 'success');
         UI.limpiarCampos();
     }
 });
@@ -115,4 +121,8 @@ document.querySelector('#libro-list').addEventListener('click', (e) => {
         Datos.removerLibro(isbn);
         UI.mostrarAlerta('Libro Eliminado', 'success');
     }
+});
+
+document.querySelector('#search').addEventListener('input', (e) => {
+    UI.filtrarLibros(e.target.value);
 });

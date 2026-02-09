@@ -1,44 +1,56 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="bootstrap.min.css">
-    <title>Coleccion de Libros </title>
+    <link rel="stylesheet" href="styles.css">
+    <title>Colección de Libros</title>
 </head>
 <body>
-    <div class="container mt-4">
-        <h1 class="display-4 text-center"> Catalogoo de <span class="text-primary">libros</span> </h1>
-        <form id="libro-form">
-            <div class="form-group"> 
-                <label for="titulo">Titulo</label>
-                <input type="text" id="titulo" class="form-control">
+    <div class="container main-container">
+        <h1 class="text-center">Catálogo de <span class="text-primary-custom">Libros</span></h1>
+        
+        <form id="libro-form" autocomplete="off">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="titulo">Título</label>
+                    <input type="text" id="titulo" class="form-control" placeholder="Nombre del libro">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label for="autor">Autor</label>
+                    <input type="text" id="autor" class="form-control" placeholder="Autor del libro">
+                </div>
             </div>
-            <div class="form-group"> 
-                <label for="autor">Autor</label>
-                <input type="text" id="autor" class="form-control">
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label for="isbn">ISBN</label>
+                    <input type="text" id="isbn" class="form-control" placeholder="Código ISBN">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label for="stock">Stock</label>
+                    <input type="number" id="stock" class="form-control" placeholder="Cantidad disponible">
+                </div>
             </div>
-            <div class="form-group"> 
-                <label for="isbn">#ISBN</label>
-                <input type="text" id="isbn" class="form-control">
-            </div>
-            <div class="form-group"> 
-                <label for="stock">Stock</label>
-                <input type="text" id="stock" class="form-control">
-            </div>
-            <input type="submit" value="Agregar libro" class="btn btn-primary btn-block"></inputt>
+            <input type="submit" value="Agregar Libro" class="btn btn-custom btn-block mt-3">
         </form>
-        <table class="table table-striped mt-5">
-            <thead>
-                <tr>
-                    <th>Titulo</th>
-                    <th>Autor</th>
-                    <th>ISBN#</th>
-                    <th>Stock</th>
-                </tr>
-            </thead>
-            <tbody id="libro-list"></tbody>
-        </table>
+
+        <div class="mt-5">
+            <input type="text" id="search" class="form-control mb-3" placeholder="🔍 Buscar por título o autor...">
+            
+            <table class="table table-hover text-center">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>ISBN</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="libro-list"></tbody>
+            </table>
+        </div>
     </div>
     <script src="app.js"></script>
 </body>
