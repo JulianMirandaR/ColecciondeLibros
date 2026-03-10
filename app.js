@@ -154,12 +154,11 @@ class Datos {
         await updateDoc(doc(db, "productos", productoActualizado.id), Object.assign({}, productoActualizado));
     }
 
-    static async cargarInicialesBBDD(forzarMerge = false) {
+    static async cargarInicialesBBDD() {
         const snapshot = await getDocs(collection(db, "productos"));
 
-        // Si está vacía o si el usuario apretó restaurar, metemos lo que falte
-        if (snapshot.empty || forzarMerge) {
-            const existentes = snapshot.docs.map(doc => doc.data());
+        if (snapshot.empty) {
+            const existentes = [];
 
             const iniciales = [
                 // LINEA AQUA
@@ -304,18 +303,6 @@ class Datos {
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.inicializar();
-});
-
-document.querySelector('#reset-db').addEventListener('click', async (e) => {
-    e.preventDefault();
-    if (confirm('Atención: Esto escaneará tus datos y si borraste por error alguno de los productos predeterminados (como Accesorios de sistema) los volverá a crear sin afectar tu stock actual. ¿Sincronizar?')) {
-        const lista = document.querySelector('#producto-list');
-        lista.innerHTML = '<tr><td colspan="6">Sincronizando productos faltantes con la nube... ⌛</td></tr>';
-
-        await Datos.cargarInicialesBBDD(true);
-        await UI.refrescarYMostrar();
-        UI.mostrarAlerta('Se han restaurado los productos faltantes sin afectar tus datos actuales.', 'success');
-    }
 });
 
 document.querySelector('#producto-form').addEventListener('submit', async (e) => {
