@@ -1,3 +1,20 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+import { getFirestore, collection, setDoc, getDocs, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAoivMmCg1sSS2WlZVge0W-RaOnj4FPNBc",
+    authDomain: "stockessen-9c8c8.firebaseapp.com",
+    projectId: "stockessen-9c8c8",
+    storageBucket: "stockessen-9c8c8.firebasestorage.app",
+    messagingSenderId: "311075502813",
+    appId: "1:311075502813:web:cba56d0f6b3a48cd6b7934"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let productosCache = [];
+
 class ProductoEssen {
     constructor(codigo, producto, linea, valorPuntos, stock) {
         this.id = Date.now().toString() + Math.random().toString().slice(2, 5);
@@ -10,17 +27,37 @@ class ProductoEssen {
 }
 
 class UI {
-    static mostrarProductos() {
-        Datos.cargarProductosPorDefecto();
-        Datos.cargarAccesoriosYComplementos();
-        let productos = Datos.traerProductos();
+    static async inicializar() {
+        const lista = document.querySelector('#producto-list');
+        lista.innerHTML = '<tr><td colspan="6">Conectando a la base de datos en la nube... ☁️</td></tr>';
 
-        // Ordenar por stock descendente
-        productos.sort((a, b) => b.stock - a.stock);
+        await Datos.cargarInicialesBBDD();
+        await UI.refrescarYMostrar();
+    }
 
+    static async refrescarYMostrar() {
+        productosCache = await Datos.traerProductos();
+        UI.renderizarTabla();
+    }
+
+    static renderizarTabla(filtro = '') {
         const lista = document.querySelector('#producto-list');
         lista.innerHTML = '';
-        productos.forEach((producto) => UI.agregarProductoALista(producto));
+
+        let filtrados = productosCache;
+
+        if (filtro) {
+            filtrados = filtrados.filter(p =>
+                p.codigo.toLowerCase().includes(filtro.toLowerCase()) ||
+                p.producto.toLowerCase().includes(filtro.toLowerCase()) ||
+                p.linea.toLowerCase().includes(filtro.toLowerCase())
+            );
+        }
+
+        // Ordenar por stock descendente
+        filtrados.sort((a, b) => b.stock - a.stock);
+
+        filtrados.forEach((producto) => UI.agregarProductoALista(producto));
     }
 
     static agregarProductoALista(producto) {
@@ -44,12 +81,6 @@ class UI {
         lista.appendChild(fila);
     }
 
-    static eliminarProducto(el) {
-        if (el.classList.contains('delete')) {
-            el.parentElement.parentElement.remove();
-        }
-    }
-
     static mostrarAlerta(mensaje, className) {
         const div = document.createElement('div');
         div.className = `alert alert-${className}`;
@@ -63,8 +94,7 @@ class UI {
     }
 
     static cargarProductoEnFormulario(id) {
-        const productos = Datos.traerProductos();
-        const producto = productos.find(p => p.id === id);
+        const producto = productosCache.find(p => p.id === id);
 
         if (producto) {
             document.querySelector('#edit-id').value = producto.id;
@@ -85,61 +115,49 @@ class UI {
         document.querySelector('#linea').value = '';
         document.querySelector('#valorPuntos').value = '';
         document.querySelector('#stock').value = '';
+        document.querySelector('#edit-id').value = '';
+        document.querySelector('#submit-btn').value = 'Agregar Producto';
     }
 
-    static filtrarProductos(texto) {
-        const lista = document.querySelector('#producto-list');
-        lista.innerHTML = '';
-        const productos = Datos.traerProductos();
-
-        let filtrados = productos.filter(p =>
-            p.codigo.toLowerCase().includes(texto.toLowerCase()) ||
-            p.producto.toLowerCase().includes(texto.toLowerCase()) ||
-            p.linea.toLowerCase().includes(texto.toLowerCase())
-        );
-
-        // Mantener el orden descendente por stock en los resultados filtrados
-        filtrados.sort((a, b) => b.stock - a.stock);
-
-        filtrados.forEach(p => UI.agregarProductoALista(p));
+    static botonDeCarga(habilitar) {
+        const btn = document.querySelector('#submit-btn');
+        if (habilitar) {
+            btn.disabled = false;
+            btn.value = document.querySelector('#edit-id').value ? 'Guardar Cambios' : 'Agregar Producto';
+        } else {
+            btn.disabled = true;
+            btn.value = 'Guardando...';
+        }
     }
 }
 
 class Datos {
-    static traerProductos() {
-        let productos;
-        if (localStorage.getItem('productos') === null) {
-            productos = [];
-        } else {
-            productos = JSON.parse(localStorage.getItem('productos'));
-        }
+    static async traerProductos() {
+        const querySnapshot = await getDocs(collection(db, "productos"));
+        let productos = [];
+        querySnapshot.forEach((doc) => {
+            productos.push(doc.data());
+        });
         return productos;
     }
 
-    static agregarProducto(producto) {
-        const productos = Datos.traerProductos();
-        productos.push(producto);
-        localStorage.setItem('productos', JSON.stringify(productos));
+    static async agregarProducto(producto) {
+        // En Firestore usamos el ID que generamos como nombre del documento
+        await setDoc(doc(db, "productos", producto.id), Object.assign({}, producto));
     }
 
-    static removerProducto(id) {
-        const productos = Datos.traerProductos();
-        const actualizados = productos.filter(p => p.id !== id);
-        localStorage.setItem('productos', JSON.stringify(actualizados));
+    static async removerProducto(id) {
+        await deleteDoc(doc(db, "productos", id));
     }
 
-    static actualizarProducto(productoActualizado) {
-        let productos = Datos.traerProductos();
-        const index = productos.findIndex(p => p.id === productoActualizado.id);
-        if (index !== -1) {
-            productos[index] = productoActualizado;
-            localStorage.setItem('productos', JSON.stringify(productos));
-        }
+    static async actualizarProducto(productoActualizado) {
+        await updateDoc(doc(db, "productos", productoActualizado.id), Object.assign({}, productoActualizado));
     }
 
-    static cargarProductosPorDefecto() {
-        const cargados = localStorage.getItem('productosCargados');
-        if (!cargados) {
+    static async cargarInicialesBBDD() {
+        const snapshot = await getDocs(collection(db, "productos"));
+        // Si la base de datos está vacía, subimos todos los de la lista!
+        if (snapshot.empty) {
             const iniciales = [
                 // LINEA AQUA
                 { codigo: "3018", producto: "Cacerola 3018", linea: "LINEA AQUA", valorPuntos: 0, stock: 2 },
@@ -210,23 +228,8 @@ class Datos {
                 { codigo: "-", producto: "Wok", linea: "LINEA C/SENSOR", valorPuntos: 0, stock: 2 },
                 // Linea Cherry
                 { codigo: "2024", producto: "Cacerola 2024", linea: "LINEA CHERRY", valorPuntos: 0, stock: 1 },
-                { codigo: "4024", producto: "Sartén 4024", linea: "LINEA CHERRY", valorPuntos: 0, stock: 2 }
-            ];
-
-            let productosActuales = Datos.traerProductos();
-            iniciales.forEach(p => {
-                const nuevo = new ProductoEssen(p.codigo, p.producto, p.linea, p.valorPuntos, p.stock);
-                productosActuales.push(nuevo);
-            });
-            localStorage.setItem('productos', JSON.stringify(productosActuales));
-            localStorage.setItem('productosCargados', 'true');
-        }
-    }
-
-    static cargarAccesoriosYComplementos() {
-        const cargados = localStorage.getItem('accesoriosCargados');
-        if (!cargados) {
-            const nuevos = [
+                { codigo: "4024", producto: "Sartén 4024", linea: "LINEA CHERRY", valorPuntos: 0, stock: 2 },
+                // ACCESORIOS RECIEN AÑADIDOS
                 { codigo: "-", producto: "Abrelatas 5 en 1", linea: "ACCESORIOS", valorPuntos: 0, stock: 0 },
                 { codigo: "-", producto: "Abrelatas Blanco", linea: "ACCESORIOS", valorPuntos: 21, stock: 2 },
                 { codigo: "-", producto: "Aros de Silicona Capri", linea: "CAPRI", valorPuntos: 0, stock: 1 },
@@ -278,31 +281,41 @@ class Datos {
                 { codigo: "-", producto: "Afilador de cuchillos", linea: "ACCESORIOS", valorPuntos: 0, stock: 1 }
             ];
 
-            let productosActuales = Datos.traerProductos();
-            nuevos.forEach(p => {
+            // Promesas asincronicas para subir todos los productos mas rapido
+            const promesas = iniciales.map(p => {
                 const nuevo = new ProductoEssen(p.codigo, p.producto, p.linea, p.valorPuntos, p.stock);
-                productosActuales.push(nuevo);
+                return setDoc(doc(db, "productos", nuevo.id), Object.assign({}, nuevo));
             });
-            localStorage.setItem('productos', JSON.stringify(productosActuales));
-            localStorage.setItem('accesoriosCargados', 'true');
+            await Promise.all(promesas);
         }
     }
 }
 
-document.addEventListener('DOMContentLoaded', UI.mostrarProductos);
+// ----------------------------------------------------
+// LISTENERS (Eventos Principales)
 
-document.querySelector('#reset-db').addEventListener('click', (e) => {
+document.addEventListener('DOMContentLoaded', () => {
+    UI.inicializar();
+});
+
+document.querySelector('#reset-db').addEventListener('click', async (e) => {
     e.preventDefault();
-    if (confirm('¿Estás seguro/a de que deseas sincronizar la base de datos? Esto forzará la carga de todos los productos por defecto y reemplazará los datos actuales si hay conflictos.')) {
-        localStorage.removeItem('productos');
-        localStorage.removeItem('productosCargados');
-        localStorage.removeItem('accesoriosCargados');
-        UI.mostrarProductos();
-        UI.mostrarAlerta('Base de datos inicial sincronizada correctamente', 'success');
+    if (confirm('Atención: Si confirmas, todos los productos en Firebase serán borrados y se recargará solo el paquete inicial. ¿Continuar?')) {
+        const bdVieja = await Datos.traerProductos();
+        const lista = document.querySelector('#producto-list');
+        lista.innerHTML = '<tr><td colspan="6">Borrando y restableciendo servidor en la nube...</td></tr>';
+
+        // borrar todo y recargar
+        const promesasBorrar = bdVieja.map(p => Datos.removerProducto(p.id));
+        await Promise.all(promesasBorrar);
+
+        await Datos.cargarInicialesBBDD();
+        await UI.refrescarYMostrar();
+        UI.mostrarAlerta('Base de datos inicial sincronizada en la nube correctamente', 'success');
     }
 });
 
-document.querySelector('#producto-form').addEventListener('submit', (e) => {
+document.querySelector('#producto-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const codigo = document.querySelector('#codigo').value;
@@ -315,53 +328,72 @@ document.querySelector('#producto-form').addEventListener('submit', (e) => {
     if (codigo === '' || productoText === '' || linea === '' || stock === '') {
         UI.mostrarAlerta('Por favor ingrese todos los datos obligatorios', 'danger');
     } else {
-        if (editId) {
-            const productoActualizado = new ProductoEssen(codigo, productoText, linea, valorPuntos, stock);
-            productoActualizado.id = editId;
-            Datos.actualizarProducto(productoActualizado);
-            UI.mostrarAlerta('Producto actualizado exitosamente', 'success');
-        } else {
-            const producto = new ProductoEssen(codigo, productoText, linea, valorPuntos, stock);
-            Datos.agregarProducto(producto);
-            UI.mostrarAlerta('Producto agregado exitosamente', 'success');
+        UI.botonDeCarga(false); // Para no clickear de nuevo por error
+        try {
+            if (editId) {
+                const productoActualizado = new ProductoEssen(codigo, productoText, linea, valorPuntos, stock);
+                productoActualizado.id = editId;
+                await Datos.actualizarProducto(productoActualizado);
+                UI.mostrarAlerta('Producto actualizado exitosamente en Firebase', 'success');
+            } else {
+                const producto = new ProductoEssen(codigo, productoText, linea, valorPuntos, stock);
+                await Datos.agregarProducto(producto);
+                UI.mostrarAlerta('Producto agregado exitosamente a Firebase', 'success');
+            }
+            UI.limpiarCampos();
+            await UI.refrescarYMostrar();
+        } catch (error) {
+            UI.mostrarAlerta('Error al comunicarse con la nube', 'danger');
+            console.error(error);
         }
-
-        document.querySelector('#edit-id').value = '';
-        document.querySelector('#submit-btn').value = 'Agregar Producto';
-        UI.limpiarCampos();
-        UI.mostrarProductos();
+        UI.botonDeCarga(true);
     }
 });
 
-document.querySelector('#producto-list').addEventListener('click', (e) => {
+document.querySelector('#producto-list').addEventListener('click', async (e) => {
     const boton = e.target.closest('button, .btn, .delete');
     if (!boton) return;
 
     if (boton.classList.contains('delete')) {
-        const id = boton.dataset.id;
-        UI.eliminarProducto(boton);
-        Datos.removerProducto(id);
-        UI.mostrarAlerta('Producto Eliminado', 'success');
+        if (confirm('¿Estás seguro que deseas eliminar este producto permanentemente de la nube?')) {
+            const id = boton.dataset.id;
+
+            // Efecto visual instantaneo
+            boton.parentElement.parentElement.remove();
+
+            await Datos.removerProducto(id);
+            UI.mostrarAlerta('Producto Eliminado de Firebase', 'success');
+
+            // Actualizar el cache
+            productosCache = productosCache.filter(p => p.id !== id);
+        }
     } else if (boton.classList.contains('edit')) {
         const id = boton.dataset.id;
         UI.cargarProductoEnFormulario(id);
     } else if (boton.classList.contains('increase-stock')) {
         const id = boton.dataset.id;
-        let p = Datos.traerProductos().find(prod => prod.id === id);
+        let p = productosCache.find(prod => prod.id === id);
+
+        // Actualizamos de inmediato en pantalla cacheada para que no haya lagg visual
         p.stock = parseInt(p.stock) + 1;
-        Datos.actualizarProducto(p);
-        UI.mostrarProductos();
+        UI.renderizarTabla(document.querySelector('#search').value);
+
+        // Mandamos el guardado asincronicamente
+        Datos.actualizarProducto(p).catch(err => console.error('Error al subir stock', err));
+
     } else if (boton.classList.contains('decrease-stock')) {
         const id = boton.dataset.id;
-        let p = Datos.traerProductos().find(prod => prod.id === id);
+        let p = productosCache.find(prod => prod.id === id);
+
         if (parseInt(p.stock) > 0) {
             p.stock = parseInt(p.stock) - 1;
-            Datos.actualizarProducto(p);
-            UI.mostrarProductos();
+            UI.renderizarTabla(document.querySelector('#search').value);
+
+            Datos.actualizarProducto(p).catch(err => console.error('Error al bajar stock', err));
         }
     }
 });
 
 document.querySelector('#search').addEventListener('input', (e) => {
-    UI.filtrarProductos(e.target.value);
+    UI.renderizarTabla(e.target.value);
 });
