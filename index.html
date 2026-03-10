@@ -45,8 +45,17 @@
         </form>
 
         <div class="mt-5">
-            <input type="text" id="search" class="form-control mb-3"
-                placeholder="🔍 Buscar por código, producto o línea...">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <input type="text" id="search" class="form-control"
+                    style="width: auto; flex-grow: 1; margin-right: 15px;"
+                    placeholder="🔍 Buscar por código, producto o línea...">
+                <div>
+                    <button id="btn-exportar" class="btn btn-success" style="margin-right: 5px;">📥 Excel</button>
+                    <input type="file" id="input-importar" accept=".xlsx, .xls" style="display: none;">
+                    <button id="btn-importar" class="btn btn-primary"
+                        onclick="document.getElementById('input-importar').click()">📤 Subir Excel</button>
+                </div>
+            </div>
 
             <table class="table table-hover text-center">
                 <thead>
@@ -63,6 +72,7 @@
             </table>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 

@@ -397,3 +397,82 @@ document.querySelector('#producto-list').addEventListener('click', async (e) => 
 document.querySelector('#search').addEventListener('input', (e) => {
     UI.renderizarTabla(e.target.value);
 });
+
+// EXPORTAR a EXCEL
+document.querySelector('#btn-exportar').addEventListener('click', () => {
+    if (productosCache.length === 0) {
+        UI.mostrarAlerta('No hay productos para exportar.', 'warning');
+        return;
+    }
+
+    const exportar = productosCache.map(p => ({
+        ID: p.id,
+        Codigo: p.codigo,
+        Producto: p.producto,
+        Linea: p.linea,
+        Puntos: p.valorPuntos,
+        Stock: p.stock
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportar);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock");
+    XLSX.writeFile(workbook, "StockEssen.xlsx");
+});
+
+// IMPORTAR desde EXCEL
+document.querySelector('#input-importar').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!confirm('Esto actualizará o añadirá información en Firestore usando las filas del Excel. ¿Continuar?')) {
+        e.target.value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+        try {
+            const data = new Uint8Array(event.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const excelRows = XLSX.utils.sheet_to_json(firstSheet);
+
+            if (excelRows.length === 0) throw new Error("Excel vacío");
+
+            const lista = document.querySelector('#producto-list');
+            lista.innerHTML = '<tr><td colspan="6">Sincronizando Excel con Firebase... ⏳</td></tr>';
+
+            const updatePromises = [];
+            for (let row of excelRows) {
+                const isValidID = row.ID && row.ID.toString().trim() !== "";
+
+                const productoParaSubir = new ProductoEssen(
+                    (row.Codigo || "-").toString(),
+                    (row.Producto || "").toString(),
+                    (row.Linea || "").toString(),
+                    parseInt(row.Puntos) || 0,
+                    parseInt(row.Stock) || 0
+                );
+
+                if (isValidID) {
+                    productoParaSubir.id = row.ID.toString();
+                    updatePromises.push(Datos.actualizarProducto(productoParaSubir));
+                } else {
+                    updatePromises.push(Datos.agregarProducto(productoParaSubir));
+                }
+            }
+
+            await Promise.all(updatePromises);
+            UI.mostrarAlerta('Stock sincronizado correctamente a la Nube desde tu archivo Excel. ✅', 'success');
+            await UI.refrescarYMostrar();
+        } catch (err) {
+            console.error(err);
+            UI.mostrarAlerta('Error al leer o importar el archivo Excel.', 'danger');
+            await UI.refrescarYMostrar();
+        }
+        e.target.value = '';
+    };
+    reader.readAsArrayBuffer(file);
+});
