@@ -68,13 +68,13 @@ class UI {
         <td>${producto.producto}</td>
         <td>${producto.linea}</td>
         <td>${producto.valorPuntos}</td>
-        <td>
+        <td class="text-nowrap">
             <button class="btn btn-sm btn-outline-secondary decrease-stock" data-id="${producto.id}">-</button>
             <span class="mx-2 stock-value">${producto.stock}</span>
             <button class="btn btn-sm btn-outline-secondary increase-stock" data-id="${producto.id}">+</button>
         </td>
-        <td>
-            <button class="btn btn-info btn-sm edit" data-id="${producto.id}" style="margin-right: 5px;">✏️</button>
+        <td class="text-nowrap">
+            <button class="btn btn-info btn-sm edit me-1" data-id="${producto.id}">✏️</button>
             <button class="btn btn-delete btn-sm delete" data-id="${producto.id}">X</button>
         </td>
         `;

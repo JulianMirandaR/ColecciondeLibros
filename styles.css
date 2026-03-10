@@ -127,3 +127,17 @@ label {
     border-radius: 8px;
     font-weight: 500;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .main-container {
+        padding: 15px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+    }
+}

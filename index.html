@@ -43,31 +43,34 @@
         </form>
 
         <div class="mt-5">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-                <input type="text" id="search" class="form-control"
-                    style="width: auto; flex-grow: 1; margin-right: 15px;"
-                    placeholder="🔍 Buscar por código, producto o línea...">
-                <div>
-                    <button id="btn-exportar" class="btn btn-success" style="margin-right: 5px;">📥 Excel</button>
-                    <input type="file" id="input-importar" accept=".xlsx, .xls" style="display: none;">
-                    <button id="btn-importar" class="btn btn-primary"
+            <div class="row mb-3 align-items-center g-3">
+                <div class="col-12 col-md-7 col-lg-8">
+                    <input type="text" id="search" class="form-control"
+                        placeholder="🔍 Buscar por código, producto o línea...">
+                </div>
+                <div class="col-12 col-md-5 col-lg-4 d-flex justify-content-md-end justify-content-center flex-wrap">
+                    <button id="btn-exportar" class="btn btn-success me-2 mb-2 mb-md-0">📥 Excel</button>
+                    <input type="file" id="input-importar" accept=".xlsx, .xls" class="d-none">
+                    <button id="btn-importar" class="btn btn-primary mb-2 mb-md-0"
                         onclick="document.getElementById('input-importar').click()">📤 Subir Excel</button>
                 </div>
             </div>
 
-            <table class="table table-hover text-center">
-                <thead>
-                    <tr>
-                        <th>Código</th>
-                        <th>Producto</th>
-                        <th>Línea</th>
-                        <th>Pts</th>
-                        <th>Stock</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="producto-list"></tbody>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-hover text-center align-middle">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Producto</th>
+                            <th>Línea</th>
+                            <th>Pts</th>
+                            <th>Stock</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="producto-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
