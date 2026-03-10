@@ -291,6 +291,17 @@ class Datos {
 
 document.addEventListener('DOMContentLoaded', UI.mostrarProductos);
 
+document.querySelector('#reset-db').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (confirm('¿Estás seguro/a de que deseas sincronizar la base de datos? Esto forzará la carga de todos los productos por defecto y reemplazará los datos actuales si hay conflictos.')) {
+        localStorage.removeItem('productos');
+        localStorage.removeItem('productosCargados');
+        localStorage.removeItem('accesoriosCargados');
+        UI.mostrarProductos();
+        UI.mostrarAlerta('Base de datos inicial sincronizada correctamente', 'success');
+    }
+});
+
 document.querySelector('#producto-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
