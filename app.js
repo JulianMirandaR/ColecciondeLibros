@@ -54,15 +54,43 @@ class UI {
             );
         }
 
-        // Ordenar por stock descendente
-        filtrados.sort((a, b) => b.stock - a.stock);
+        // Dividir en grupos
+        let principales = filtrados.filter(p => p.linea.toUpperCase() !== 'ACCESORIOS');
+        let accesorios = filtrados.filter(p => p.linea.toUpperCase() === 'ACCESORIOS');
 
-        filtrados.forEach((producto) => UI.agregarProductoALista(producto));
+        // Ordenar por stock descendente
+        principales.sort((a, b) => b.stock - a.stock);
+        accesorios.sort((a, b) => b.stock - a.stock);
+
+        let renderGroup = (grupo, titulo) => {
+            if (grupo.length > 0) {
+                const headerRow = document.createElement('tr');
+                headerRow.innerHTML = `<td colspan="6" style="background-color: rgba(35, 213, 171, 0.1); color: #23d5ab; letter-spacing: 2px;" class="fw-bold text-uppercase py-3">${titulo}</td>`;
+                lista.appendChild(headerRow);
+
+                let counterStock = 0;
+                grupo.forEach(producto => {
+                    let rowClass = "";
+                    if (producto.stock == 0) {
+                        rowClass = "row-sin-stock";
+                    } else {
+                        rowClass = counterStock % 2 === 0 ? "row-con-stock-par" : "row-con-stock-impar";
+                        counterStock++;
+                    }
+                    UI.agregarProductoALista(producto, rowClass);
+                });
+            }
+        };
+
+        renderGroup(principales, "🥘 LÍNEAS PRINCIPALES");
+        renderGroup(accesorios, "⚡ ACCESORIOS");
     }
 
-    static agregarProductoALista(producto) {
+    static agregarProductoALista(producto, rowClass = "") {
         const lista = document.querySelector('#producto-list');
         const fila = document.createElement('tr');
+        if (rowClass) fila.className = rowClass;
+
         fila.innerHTML = `
         <td>${producto.codigo}</td>
         <td>${producto.producto}</td>
