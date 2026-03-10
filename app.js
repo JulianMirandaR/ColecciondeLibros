@@ -154,10 +154,13 @@ class Datos {
         await updateDoc(doc(db, "productos", productoActualizado.id), Object.assign({}, productoActualizado));
     }
 
-    static async cargarInicialesBBDD() {
+    static async cargarInicialesBBDD(forzarMerge = false) {
         const snapshot = await getDocs(collection(db, "productos"));
-        // Si la base de datos está vacía, subimos todos los de la lista!
-        if (snapshot.empty) {
+
+        // Si está vacía o si el usuario apretó restaurar, metemos lo que falte
+        if (snapshot.empty || forzarMerge) {
+            const existentes = snapshot.docs.map(doc => doc.data());
+
             const iniciales = [
                 // LINEA AQUA
                 { codigo: "3018", producto: "Cacerola 3018", linea: "LINEA AQUA", valorPuntos: 0, stock: 2 },
@@ -281,10 +284,15 @@ class Datos {
                 { codigo: "-", producto: "Afilador de cuchillos", linea: "ACCESORIOS", valorPuntos: 0, stock: 1 }
             ];
 
-            // Promesas asincronicas para subir todos los productos mas rapido
-            const promesas = iniciales.map(p => {
-                const nuevo = new ProductoEssen(p.codigo, p.producto, p.linea, p.valorPuntos, p.stock);
-                return setDoc(doc(db, "productos", nuevo.id), Object.assign({}, nuevo));
+            // Promesas asincronicas para subir todos los productos mas rapido SOLO si no existen
+            const promesas = [];
+            iniciales.forEach(p => {
+                // Buscamos si ya existe alguien con mismo Codigo y Producto para no sobrescribir su stock
+                const yaExiste = existentes.some(ext => ext.codigo === p.codigo && ext.producto === p.producto);
+                if (!yaExiste) {
+                    const nuevo = new ProductoEssen(p.codigo, p.producto, p.linea, p.valorPuntos, p.stock);
+                    promesas.push(setDoc(doc(db, "productos", nuevo.id), Object.assign({}, nuevo)));
+                } // Si existe, no hacemos nada y respetamos el que está en Firebase
             });
             await Promise.all(promesas);
         }
@@ -300,18 +308,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.querySelector('#reset-db').addEventListener('click', async (e) => {
     e.preventDefault();
-    if (confirm('Atención: Si confirmas, todos los productos en Firebase serán borrados y se recargará solo el paquete inicial. ¿Continuar?')) {
-        const bdVieja = await Datos.traerProductos();
+    if (confirm('Atención: Esto escaneará tus datos y si borraste por error alguno de los productos predeterminados (como Accesorios de sistema) los volverá a crear sin afectar tu stock actual. ¿Sincronizar?')) {
         const lista = document.querySelector('#producto-list');
-        lista.innerHTML = '<tr><td colspan="6">Borrando y restableciendo servidor en la nube...</td></tr>';
+        lista.innerHTML = '<tr><td colspan="6">Sincronizando productos faltantes con la nube... ⌛</td></tr>';
 
-        // borrar todo y recargar
-        const promesasBorrar = bdVieja.map(p => Datos.removerProducto(p.id));
-        await Promise.all(promesasBorrar);
-
-        await Datos.cargarInicialesBBDD();
+        await Datos.cargarInicialesBBDD(true);
         await UI.refrescarYMostrar();
-        UI.mostrarAlerta('Base de datos inicial sincronizada en la nube correctamente', 'success');
+        UI.mostrarAlerta('Se han restaurado los productos faltantes sin afectar tus datos actuales.', 'success');
     }
 });
 
