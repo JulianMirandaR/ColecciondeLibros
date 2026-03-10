@@ -108,30 +108,30 @@ label {
 }
 
 /* Filas con stock alternadas */
-.table tbody tr.row-con-stock-par {
-    background-color: rgba(255, 255, 255, 0.02);
+.table tbody tr.row-con-stock-par>* {
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-.table tbody tr.row-con-stock-impar {
-    background-color: rgba(0, 0, 0, 0.2);
+.table tbody tr.row-con-stock-impar>* {
+    background-color: rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Filas sin stock */
-.table tbody tr.row-sin-stock {
-    background-color: rgba(255, 99, 71, 0.1);
-    color: #888;
+.table tbody tr.row-sin-stock>* {
+    background-color: rgba(255, 99, 71, 0.15) !important;
+    color: #999 !important;
 }
 
 /* Efectos Hover específicos para respetar interactividad de filas personalizadas */
-.table-hover tbody tr.row-con-stock-par:hover,
-.table-hover tbody tr.row-con-stock-impar:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-    color: #fff;
+.table-hover tbody tr.row-con-stock-par:hover>*,
+.table-hover tbody tr.row-con-stock-impar:hover>* {
+    background-color: rgba(35, 213, 171, 0.2) !important;
+    color: #fff !important;
 }
 
-.table-hover tbody tr.row-sin-stock:hover {
-    background-color: rgba(255, 99, 71, 0.2);
-    color: #ddd;
+.table-hover tbody tr.row-sin-stock:hover>* {
+    background-color: rgba(255, 99, 71, 0.25) !important;
+    color: #ccc !important;
 }
 
 .btn-delete {

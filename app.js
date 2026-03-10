@@ -58,6 +58,10 @@ class UI {
         let principales = filtrados.filter(p => p.linea.toUpperCase() !== 'ACCESORIOS');
         let accesorios = filtrados.filter(p => p.linea.toUpperCase() === 'ACCESORIOS');
 
+        // Leer estado de los botones de filtro
+        const mostrarPrincipales = document.querySelector('#btnradio-principales').checked;
+        const mostrarAccesorios = document.querySelector('#btnradio-accesorios').checked;
+
         // Ordenar por stock descendente
         principales.sort((a, b) => b.stock - a.stock);
         accesorios.sort((a, b) => b.stock - a.stock);
@@ -82,8 +86,13 @@ class UI {
             }
         };
 
-        renderGroup(principales, "🥘 LÍNEAS PRINCIPALES");
-        renderGroup(accesorios, "⚡ ACCESORIOS");
+        if (mostrarPrincipales) {
+            renderGroup(principales, "🥘 LÍNEAS PRINCIPALES");
+        }
+
+        if (mostrarAccesorios) {
+            renderGroup(accesorios, "⚡ ACCESORIOS");
+        }
     }
 
     static agregarProductoALista(producto, rowClass = "") {
@@ -331,6 +340,15 @@ class Datos {
 
 document.addEventListener('DOMContentLoaded', () => {
     UI.inicializar();
+});
+
+// Cambios en los botones de categoría
+document.querySelector('#btnradio-principales').addEventListener('change', () => {
+    UI.renderizarTabla(document.querySelector('#search').value);
+});
+
+document.querySelector('#btnradio-accesorios').addEventListener('change', () => {
+    UI.renderizarTabla(document.querySelector('#search').value);
 });
 
 document.querySelector('#producto-form').addEventListener('submit', async (e) => {
